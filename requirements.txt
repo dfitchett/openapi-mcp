@@ -1,0 +1,7 @@
+# Production dependencies for Vercel deployment
+# Generated from pyproject.toml
+
+httpx>=0.28.1
+mcp>=1.1.0
+starlette>=0.41.3
+sse-starlette>=2.1.3

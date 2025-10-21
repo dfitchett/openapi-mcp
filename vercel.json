@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/**/*.py": {
+      "memory": 1024,
+      "maxDuration": 60,
+      "excludeFiles": "{test/**,tests/**,__tests__/**,**/*.test.py,**/test_*.py,integration/**,end_to_end/**,fixtures/**,__fixtures__/**,testdata/**,build/**,.cache/**,*.md,poetry.lock,.pre-commit-config.yaml,.python-version}"
+    }
+  }
+}

@@ -91,3 +91,6 @@ helm-app/opa-policies/ingress/test.rego
 # Created by scripts/image-names.sh
 .github/secrel/config-updated.yml
 helm-app/values-updated.yaml
+
+# Vercel
+.vercel
