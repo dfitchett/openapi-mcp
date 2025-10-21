@@ -1,0 +1,93 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.env
+.venv
+env/
+venv/
+ENV/
+.envrc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iws
+*.iml
+*.ipr
+.run/*
+.vs/
+
+# Testing
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+/reports/
+coverage.xml
+
+# Logs
+*.log
+logs/
+
+# Local development
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Trunk
+.trunk/
+
+# Build outputs
+/out/
+/dist/
+
+# Patch/merge artifacts
+*.orig
+*.rej
+.\!*
+
+# Other
+.metals
+.pid
+.monokle
+
+# Docker
+docker-machine-driver-hyperkit
+
+# Helm
+helm-app/envsecrets.env
+tasks/config.temp.dev
+bin/
+opa/ingress/test.rego
+helm-app/opa-policies/ingress/test.rego
+
+# Created by scripts/image-names.sh
+.github/secrel/config-updated.yml
+helm-app/values-updated.yaml
