@@ -9,7 +9,7 @@ SERVER_NAME = getenv('MCP_SERVER_NAME', 'openapi-mcp')
 URI_SCHEME = getenv('MCP_URI_SCHEME', 'openapi')
 
 # Cache directory for OpenAPI specifications
-CACHE_DIR = Path(getenv('CACHE_DIR', '.cache/openapi-specs'))
+CACHE_DIR = Path(getenv('CACHE_DIR', f'{Path.home()}/.cache/openapi-specs'))
 
 # API configurations with OpenAPI specification URLs
 # This can be overridden by setting the API_CONFIGS environment variable

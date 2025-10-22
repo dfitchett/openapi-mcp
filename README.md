@@ -28,7 +28,7 @@ A generic MCP (Model Context Protocol) server that provides access to any OpenAP
 
 1. On startup, the server fetches OpenAPI specifications from configured API endpoints
 2. Specifications are cached locally (default: `.cache/openapi-specs/`)
-3. The MCP server exposes these specs as resources via the stdio transport
+3. The MCP server exposes these specs as resources via HTTP/SSE transport
 4. MCP clients can discover and read the OpenAPI specifications
 
 ## Configuration
@@ -58,7 +58,6 @@ You can also modify the API configurations directly in `src/app/config.py` by ed
 ├── src/                # Source code
 │   └── app/
 │       ├── __init__.py
-│       ├── main.py         # stdio entry point for local use
 │       ├── http_server.py  # HTTP/SSE server for Vercel
 │       ├── mcp_server.py   # Core MCP server logic
 │       ├── spec_fetcher.py # OpenAPI spec fetcher
@@ -68,6 +67,7 @@ You can also modify the API configurations directly in `src/app/config.py` by ed
 │   ├── conftest.py
 │   └── test_app.py
 ├── docker-entrypoint.sh
+├── DEPLOYMENT.md      # Deployment guide
 ├── getting_started.md
 ├── pyproject.toml
 ├── requirements.txt    # For Vercel deployment
@@ -78,6 +78,7 @@ You can also modify the API configurations directly in `src/app/config.py` by ed
 
 ### File Purposes
 * `README.md` - Project overview, documentation, instructions, and usage examples
+* `DEPLOYMENT.md` - Detailed deployment guide for running locally and deploying to Vercel
 * `getting_started.md` - Detailed setup instructions for development
 * `pyproject.toml` - Project metadata, dependencies, and build configuration using Poetry
 * `requirements.txt` - Python dependencies for Vercel deployment
@@ -125,199 +126,21 @@ pre-commit install
 
 ## Usage
 
-### Deployment Options
+This server uses HTTP/SSE transport and can be run locally for testing or deployed to Vercel for remote access.
 
-This MCP server can be run in two ways:
+**For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).**
 
-1. **Local (stdio)**: For use with local MCP clients like Claude Desktop or Cursor
-2. **Remote (HTTP/SSE)**: Deployed to Vercel or other hosting platforms for remote access
+### Quick Start
 
-### Running Locally (stdio)
-
-The MCP server runs via stdio transport, which is the standard way MCP servers communicate with local clients:
-
+Run the server locally:
 ```bash
-poetry run python -m app.main
-```
-
-### Running Locally (HTTP/SSE)
-
-You can also run the HTTP/SSE server locally for testing before deploying to Vercel:
-
-```bash
-# Install dependencies (uvicorn is included in dev dependencies)
 poetry install
-
-# Run the HTTP/SSE server locally
 poetry run uvicorn app.http_server:app --reload --port 8000
 ```
 
-The server will be available at `http://localhost:8000/sse`.
+Configure your MCP client (Cursor or Claude Desktop) to connect to `http://localhost:8000/sse`.
 
-**Configure MCP client for local HTTP/SSE testing:**
-
-**Cursor**: `~/.cursor/mcp.json`
-```json
-{
-  "mcpServers": {
-    "openapi-mcp": {
-      "url": "http://localhost:8000/sse"
-    }
-  }
-}
-```
-
-**Claude Desktop (macOS)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-```json
-{
-  "mcpServers": {
-    "openapi-mcp": {
-      "url": "http://localhost:8000/sse"
-    }
-  }
-}
-```
-
-This is useful for testing the HTTP/SSE transport before deploying to Vercel.
-
-### Deploying to Vercel (HTTP/SSE)
-
-Deploy the MCP server to Vercel for remote access via HTTP/SSE transport:
-
-#### Prerequisites
-- [Vercel account](https://vercel.com/signup)
-- [Vercel CLI](https://vercel.com/docs/cli) (optional but recommended)
-
-#### Quick Deploy
-
-1. **Install Vercel CLI** (if not already installed):
-```bash
-npm i -g vercel
-```
-
-2. **Deploy to Vercel**:
-```bash
-vercel
-```
-
-Follow the prompts to link your project and deploy. On subsequent deploys, use:
-```bash
-vercel --prod
-```
-
-#### Deployment Configuration
-
-The project includes optimized Vercel configuration in `vercel.json`:
-- **Bundle size optimization**: Automatically excludes test files, build artifacts, and development files to stay under Vercel's 250 MB bundle limit
-- **Memory**: Configured for 1024 MB
-- **Timeout**: Set to 60 seconds for long-running SSE connections
-- **Python version**: Uses Python 3.12+ as specified in `pyproject.toml`
-
-#### Environment Variables (Optional)
-
-You can configure the server via environment variables in your Vercel project settings or `.env` file:
-
-- `MCP_SERVER_NAME`: Name of the MCP server (default: `openapi-mcp`)
-- `MCP_URI_SCHEME`: URI scheme for resources (default: `openapi`)
-- `DEBUG`: Enable debug logging (default: `False`)
-
-#### Using Your Deployed Server
-
-Once deployed, you'll get a URL like `https://your-project.vercel.app`. Use this URL in your MCP client configuration:
-
-**Cursor**: `~/.cursor/mcp.json`
-```json
-{
-  "mcpServers": {
-    "openapi-mcp": {
-      "url": "https://your-project.vercel.app/sse"
-    }
-  }
-}
-```
-
-**Claude Desktop (macOS)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-```json
-{
-  "mcpServers": {
-    "openapi-mcp": {
-      "url": "https://your-project.vercel.app/sse"
-    }
-  }
-}
-```
-
-### Configuring with Claude Desktop or Cursor (Local stdio)
-
-To use this MCP server locally via stdio transport with Claude Desktop or Cursor, add the following to your MCP configuration file:
-
-**Claude Desktop (macOS)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Claude Desktop (Windows)**: `%APPDATA%/Claude/claude_desktop_config.json`
-**Cursor**: `~/.cursor/mcp.json`
-
-```json
-{
-  "mcpServers": {
-    "openapi-mcp": {
-      "command": "/bin/sh",
-      "args": ["-c", "cd /absolute/path/to/openapi-mcp && poetry run python -m app.main"],
-      "env": {
-        "PYTHONPATH": "/absolute/path/to/openapi-mcp/src"
-      }
-    }
-  }
-}
-```
-
-Replace `/absolute/path/to/openapi-mcp` with the actual path to your cloned repository (e.g., `/Users/yourusername/Documents/dev/openapi-mcp`).
-
-**Note:** This stdio configuration is ideal for local development. After updating the configuration, restart Claude Desktop or Cursor to load the MCP server.
-
-### Accessing API Specifications
-
-Once configured, the MCP server exposes resources based on your configuration. With the default VA API configuration, the following resources are available:
-
-- `openapi://api/benefits-claims-v2/openapi` - Benefits Claims API V2 OpenAPI Specification
-- `openapi://api/benefits-documents-v1/openapi` - Benefits Documents API V1 OpenAPI Specification
-
-In Claude Desktop or Cursor, you can reference these resources in your conversations, and the AI will be able to read the complete OpenAPI specifications to help you understand and work with the APIs.
-
-**Custom URI Scheme**: You can change the URI scheme by setting the `MCP_URI_SCHEME` environment variable (e.g., to `va` for `va://api/...` URIs).
-
-## Adding Additional APIs
-
-To add more APIs to the server:
-
-1. Find the OpenAPI specification URL for your API. This could be:
-   - A VA API: `https://api.va.gov/internal/docs/{api-name}/{version}/openapi.json`
-   - Any other OpenAPI spec URL: `https://your-api.com/openapi.json`, `https://petstore.swagger.io/v2/swagger.json`, etc.
-
-2. Add an entry to the `API_CONFIGS` dictionary in `src/app/config.py`:
-
-```python
-API_CONFIGS = {
-    # ... existing APIs ...
-    'my-api-v1': {
-        'name': 'My Custom API V1',
-        'url': 'https://api.example.com/openapi.json',
-        'description': 'Description of what this API does',
-    },
-}
-```
-
-3. Restart the MCP server. The new API will automatically be fetched and exposed as a resource at `openapi://api/my-api-v1/openapi` (or your custom URI scheme).
-
-No code changes are required—just configuration!
-
-### Using with Any OpenAPI Specification
-
-This server works with **any valid OpenAPI specification**, including:
-- Public APIs (GitHub, Stripe, Twilio, etc.)
-- Your own private APIs
-- Government APIs (VA, IRS, etc.)
-- Third-party service APIs
-
-Just add the OpenAPI spec URL to the configuration!
+For production deployment to Vercel and complete configuration instructions, refer to the [Deployment Guide](DEPLOYMENT.md).
 
 ## Development
 
@@ -408,8 +231,7 @@ openapi-mcp/
 │       ├── config.py         # Configuration (API URLs, server settings, cache settings)
 │       ├── spec_fetcher.py   # Generic OpenAPI spec fetcher and caching
 │       ├── mcp_server.py     # Generic MCP server implementation
-│       ├── http_server.py    # HTTP/SSE server for remote deployment
-│       └── main.py           # stdio entry point for local use
+│       └── http_server.py    # HTTP/SSE server for remote deployment
 ├── test/                     # Unit tests
 ├── .cache/                   # Cached OpenAPI specifications (gitignored, local only)
 ├── pyproject.toml           # Project dependencies (Poetry)
@@ -417,17 +239,11 @@ openapi-mcp/
 └── vercel.json              # Vercel deployment configuration
 ```
 
-### Transport Modes
+### Transport Mode
 
-This server supports two transport modes:
-
-1. **stdio (local)**: Uses standard input/output for communication with local MCP clients. Implemented in `main.py`. Ideal for local development with Claude Desktop and Cursor. Most efficient for single-user local scenarios.
-
-2. **HTTP/SSE (remote/local testing)**: Uses Server-Sent Events over HTTP for communication. Implemented in `http_server.py`. Can be:
-   - Run locally with `uvicorn` for testing the HTTP/SSE transport before deployment
-   - Deployed to cloud platforms like Vercel for remote access by multiple clients
-
-Both modes use the same core MCP server logic, differing only in how they communicate with clients.
+This server uses **HTTP/SSE (Server-Sent Events)** transport for communication. Implemented in `http_server.py`, it can be:
+- Run locally with `uvicorn` for testing the HTTP/SSE transport before deployment
+- Deployed to cloud platforms like Vercel for remote access by multiple clients
 
 ### Design Philosophy
 
