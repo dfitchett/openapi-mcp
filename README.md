@@ -10,6 +10,8 @@
 
 A generic MCP (Model Context Protocol) server that provides access to any OpenAPI specifications as resources. This server fetches and caches OpenAPI specifications from configurable API endpoints, making them available to MCP clients like Claude Desktop or Cursor.
 
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=openapi&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvc3NlIn0%3D)
+
 ## Features
 
 - **Generic & Configurable**: Works with any OpenAPI specification URL - not tied to any specific API provider
