@@ -25,4 +25,9 @@ API_CONFIGS = {
         'url': 'https://api.va.gov/internal/docs/benefits-documents/v1/openapi.json',
         'description': 'Submit supporting documents for benefits claims',
     },
+    'vets-api': {
+        'name': 'Vets API',
+        'url': 'https://dev-api.va.gov/v0/apidocs',
+        'description': 'Retrieve and submit disability compensation claims',
+    },
 }
